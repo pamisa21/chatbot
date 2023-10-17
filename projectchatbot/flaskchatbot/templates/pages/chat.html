@@ -1,0 +1,110 @@
+{% extends "layout/base.html" %}
+
+{% block extra_css %}
+<style>
+    .chat-cont {
+        min-height: 400px;
+        max-height: 400px;
+        overflow-y: scroll;
+    }
+
+    .resp,
+    .mymsg {
+        background-color: #01bfa6;
+        max-width: 250px;
+        overflow-wrap: break-word;
+        padding: 10px;
+        color: black;
+        font-size: large;
+        border-radius: 20px;
+        margin-bottom: 10px;
+    }
+
+    .mymsg {
+        background-color: #cad1d7;
+        min-width: 100px;
+
+    }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+<br>
+<br>
+<br>
+<h3 class="text-center">
+    WELCOME TO CscoChatbot
+</h3>
+<br>
+<div class="card">
+    <div class="card-body chat-cont bg-light">
+
+
+    </div>
+    <input type="text" id="msg-input" class="form-control mb-1">
+    <div class="btn btn-primary" id="send-btn">Send</div>
+</div>
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+
+    const btn = document.querySelector('#send-btn');
+    const input = document.querySelector("#msg-input");
+    const msg_con = document.querySelector(".chat-cont");
+
+    function createMyMessage(message) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('d-flex', 'justify-content-end');
+        const messageBox = document.createElement('div');
+        messageBox.classList.add('mymsg');
+        messageBox.textContent = message;
+
+        messageContainer.appendChild(messageBox);
+        const chatContainer = document.querySelector('.chat-cont');
+        chatContainer.appendChild(messageContainer);
+    }
+
+
+
+    btn.addEventListener('click', () => {
+
+
+        const message = input.value;
+        createMyMessage(message)
+
+
+        input.value = ""
+
+
+
+        // Define the data to send in the POST request
+        const data = {
+            text: message
+        };
+
+        fetch('/msg', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Display the response from the Flask endpoint
+
+                const p = document.createElement('p');
+                p.classList.add('resp')
+                p.textContent = `${data.generated_text[0].generated_text}`;
+                console.log(data.generated_text[0])
+                msg_con.appendChild(p);
+                msg_con.scrollTop = msg_con.scrollHeight
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+
+    });
+</script>
+{% endblock extra_js %}
